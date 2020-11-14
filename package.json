@@ -4,7 +4,7 @@
   "description": "## Delivers and monitors commands for queues",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/server",
+    "start": "nodemon src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Áxel Kovacki",

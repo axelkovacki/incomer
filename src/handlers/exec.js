@@ -1,6 +1,6 @@
 const hrtime = require('./hrtime');
 const { spawn } = require('child_process');
-const Log = require('../services/Log');
+const Log = require('../services/log');
 
 function exec(command = '', params = [], id = null, observation = null) {
   try {

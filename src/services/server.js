@@ -1,19 +1,24 @@
-require('dotenv').config();
-
 const fastify = require('fastify')({ logger: true });
+const Log = require('./log');
+const { exec } = require('../handlers/exec');
 
-const mongoose = require('mongoose');
-const Log = require('./services/Log');
+async function start() {
+  function isInWhiteList(ip = '') {
+    if (!ip) {
+      return false;
+    }
 
-const { exec } = require('./handlers/exec');
+    const whitelist = process.env.WHITELIST ? process.env.WHITELIST.split(',') : [];
 
-const start = async () => {
+    return whitelist.includes(ip);
+  };
+
   try {
-    mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}?retryWrites=true&w=majority`, {
-      useNewUrlParser: true
-    });
-
     fastify.post('/send', async (request, reply) => {
+      if (!isInWhiteList(request.ip)) {
+        return reply.code('400').send({ content: 'Unauthorized IP' });
+      }
+      
       const { id, command, params, observation } = request.body;
 
       if (!command) {
@@ -26,6 +31,10 @@ const start = async () => {
     });
 
     fastify.get('/log/:id', async (request, reply) => {
+      if (!isInWhiteList(request.ip)) {
+        return reply.code('400').send({ content: 'Unauthorized IP' });
+      }
+
       const { id } = request.params;
       
       if (!id) {
@@ -43,4 +52,6 @@ const start = async () => {
   }
 }
 
-start();
+module.exports = {
+  start
+};
