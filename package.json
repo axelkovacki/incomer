@@ -4,7 +4,7 @@
   "description": "## Delivers and monitors commands for queues",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src",
+    "start": "npx nodemon src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Áxel Kovacki",
@@ -13,9 +13,7 @@
     "axios": "^0.21.0",
     "dotenv": "^8.2.0",
     "fastify": "^3.8.0",
-    "knex": "^0.21.12",
-    "mongoose": "^5.10.14",
-    "uninstall": "0.0.0"
+    "mongoose": "^5.10.14"
   },
   "devDependencies": {
     "nodemon": "^2.0.6"
