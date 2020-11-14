@@ -14,34 +14,36 @@ async function start() {
   };
 
   try {
+    fastify.register(require('fastify-cors'));
+    
     fastify.post('/send', async (request, reply) => {
       if (!isInWhiteList(request.ip)) {
         return reply.code('400').send({ content: 'Unauthorized IP' });
       }
       
-      const { id, command, params, observation } = request.body;
-
+      const { groupId, command, params, observation } = request.body;
+      
       if (!command) {
         return reply.code('400').send({ content: 'Invalid Body' });
       }
 
-      exec(command, params || [], `${id}`, observation);
+      exec(command, params || [], `${groupId}`, observation);
 
-      return { content: 'Command sended' };
+      return reply.send({ content: 'Command sended' });
     });
 
-    fastify.get('/log/:id', async (request, reply) => {
-      if (!isInWhiteList(request.ip)) {
-        return reply.code('400').send({ content: 'Unauthorized IP' });
-      }
+    fastify.get('/log', async (request, reply) => {
+      return reply.send({ content: await Log.find().sort('-createdAt') });
+    });
 
-      const { id } = request.params;
+    fastify.get('/log/group/:groupId', async (request, reply) => {
+      const { groupId } = request.params;
       
-      if (!id) {
+      if (!groupId) {
         return reply.code('400').send({ content: 'Invalid Param' });
       }
 
-      return { content: await Log.find({ id }) };
+      return reply.send({ content: await Log.find({ groupId }).sort('-createdAt') });
     });
 
     await fastify.listen(3000);

@@ -1,10 +1,10 @@
 const { Schema, model } = require('mongoose');
 
 const LogSchema = new Schema({
-  id: String,
+  groupId: String,
   command: String,
   params: Array,
-  type: String,
+  status: String,
   data: String,
   observation: String,
   ms: String,
