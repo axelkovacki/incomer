@@ -21,13 +21,13 @@ async function start() {
         return reply.code('400').send({ content: 'Unauthorized IP' });
       }
       
-      const { groupId, command, params, observation } = request.body;
+      const { groupId, command, params, observation, afterCall } = request.body;
       
       if (!command) {
         return reply.code('400').send({ content: 'Invalid Body' });
       }
 
-      exec(command, params || [], `${groupId}`, observation);
+      exec(command, params || [], `${groupId}`, observation, afterCall);
 
       return reply.send({ content: 'Command sended' });
     });

@@ -1,8 +1,9 @@
 const hrtime = require('./hrtime');
 const { spawn } = require('child_process');
 const Log = require('../services/log');
+const Request = require('../services/request');
 
-function exec(command = '', params = [], groupId = null, observation = null) {
+async function exec(command = '', params = [], groupId = null, observation = null, afterCall = {}) {
   try {
     let timer = hrtime.now('mili');
     let payload = {
@@ -12,45 +13,47 @@ function exec(command = '', params = [], groupId = null, observation = null) {
       observation,
       status: null,
       data: null,
-      ms: 0
+      ms: null
     };
-  
+
+    const { _id : logId } = await Log.create(payload);
+
     const spawnProcess = spawn(command, params);
 
-    spawnProcess.stdout.on('data', async data => {
+    spawnProcess.stdout.on('data', data => {
       payload = {
         ...payload,
         status: 'success',
         data: data.toString(),
         ms: hrtime.now('mili') - timer
       };
-      console.log(payload)
-      await Log.create(payload);
     });
   
-    spawnProcess.stderr.on('data', async data => {
+    spawnProcess.stderr.on('data', data => {
       payload = {
         ...payload,
         status: 'error',
         data: data.toString(),
         ms: hrtime.now('mili') - timer
       };
-
-      await Log.create(payload);
     });
   
-    spawnProcess.on('error', async error => {
+    spawnProcess.on('error', error => {
       payload = {
         ...payload,
         status: 'error',
         data: error.message,
         ms: hrtime.now('mili') - timer
       };
-
-      await Log.create(payload);
     });
   
-    spawnProcess.on('close', async code => await Log.create(payload));
+    spawnProcess.on('close', async code => {
+      await Log.updateOne({ _id: logId }, payload);
+      await Request.make({
+        ...afterCall,
+        data: payload.data
+      });
+    });
   } catch (err) {
     console.log(err);
   };

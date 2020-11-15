@@ -2,8 +2,8 @@ const axios = require('axios');
 
 const httpMethods = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'];
 
-const headersPass = ({ endpoint, method }) => {
-  if(!endpoint || !method) {
+const headersPass = ({ domain, endpoint, method }) => {
+  if(!domain || !endpoint || !method) {
     return false;
   }
 
@@ -16,54 +16,58 @@ const headersPass = ({ endpoint, method }) => {
   return true;
 }
 
-const make = async ({ domain, authorization }, { method, endpoint, content }) => {
+const make = async ({ domain, authorization, method, endpoint, data }) => {
 
   // Set default settings for Axios.
   axios.defaults.baseURL = domain;
-  axios.defaults.headers.common['Authorization'] = authorization;
 
-  if(!headersPass({ method, endpoint })) {
+  if (authorization) {
+    axios.defaults.headers.common['Authorization'] = authorization;
+  }
+
+  if(!headersPass({ domain, method, endpoint })) {
     return {
       success: false,
-      content: 'FAIL TO PASS HTTP TEST'
+      data: 'FAIL TO PASS HTTP TEST'
     };
   }
 
   if(method === 'GET') {
     try {
       const { data } = await axios.get(endpoint);
-      
+
       return {
         success: true,
-        content: data
+        data: data
       };
     } catch(err) {
+      console.log(err)
       return {
         success: false,
-        content: err.response
+        data: err.response
       };
     }
   }
 
   if(method === 'POST') {
     try {
-      const { data } = await axios.post(endpoint, content);
+      const { data } = await axios.post(endpoint, data);
       
       return {
         success: true,
-        content: data
+        data: data
       };
     } catch(err) {
       return {
         success: false,
-        content: err.response
+        data: err.response
       };
     }
   }
 
   return {
     success: false,
-    content: 'THE METHOD IS NOT AVAILABLE IN THIS MOMENT'
+    data: 'THE METHOD IS NOT AVAILABLE IN THIS MOMENT'
   };
 }
 
